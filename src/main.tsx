@@ -1,0 +1,18 @@
+// src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { DAppKitProvider } from '@mysten/dapp-kit-react';
+import { BrowserRouter } from 'react-router-dom';
+import { dAppKit } from './lib/sui';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <DAppKitProvider dAppKit={dAppKit}>
+        <App />
+      </DAppKitProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
