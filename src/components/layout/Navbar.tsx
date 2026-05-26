@@ -20,7 +20,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2 text-white">
                     <FileCheck className="h-5 w-5 text-blue-400" />
-                    <span className="font-semibold tracking-tight">WalrusNotary</span>
+                    <span className="font-semibold tracking-tight">Notary</span>
                 </Link>
 
                 {/* Nav Links */}

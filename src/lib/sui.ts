@@ -1,14 +1,19 @@
 // src/lib/sui.ts
 import { createDAppKit } from '@mysten/dapp-kit-react';
 import { SuiGrpcClient } from '@mysten/sui/grpc';
-import { RPC_URLS, NETWORK } from '../lib/constants';
+import { NETWORK } from '@/lib/constants';
+
+const GRPC_URLS = {
+    testnet: 'https://fullnode.testnet.sui.io:443',
+    mainnet: 'https://fullnode.mainnet.sui.io:443',
+} as const;
 
 export const dAppKit = createDAppKit({
     networks: [NETWORK],
     createClient: (network) =>
         new SuiGrpcClient({
             network,
-            baseUrl: RPC_URLS[network],
+            baseUrl: GRPC_URLS[network as keyof typeof GRPC_URLS],
         }),
 });
 

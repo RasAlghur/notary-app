@@ -1,76 +1,46 @@
 // src/pages/Home.tsx
-import { useState } from 'react';
+import { useCurrentAccount } from '@mysten/dapp-kit-react';
+import { CheckCircle2, ExternalLink } from 'lucide-react';
 import UploadBox from '../components/upload/UploadBox';
 import FilePreview from '../components/upload/FilePreview';
 import UploadProgress from '../components/upload/UploadProgress';
-import { useCurrentAccount } from '@mysten/dapp-kit-react';
-import type { UploadState, NotarizedDocument } from '../types/document';
-import { CheckCircle2, ExternalLink } from 'lucide-react';
-
-const INITIAL_STATE: UploadState = {
-    file: null,
-    hash: null,
-    status: 'idle',
-    progress: 0,
-    error: null,
-    result: null,
-};
-
-// Dummy notarized result for UI testing
-const DUMMY_RESULT: NotarizedDocument = {
-    id: '0xabc123',
-    blobId: 'blobABC123XYZ',
-    fileName: 'contract.pdf',
-    fileSize: 204800,
-    fileHash: 'a3f1c2e4b5d6789012345678901234567890abcdef1234567890abcdef123456',
-    owner: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-    timestamp: Date.now(),
-    txDigest: '7xKpQ2mNvL9rT4wYhZbUcDsEfGiJoAkBlMnOpQrStUvWxYz',
-};
+import { useWalrusUpload } from '../hooks/useWalrusUpload';
+import { useRegisterDocument } from '../hooks/useRegisterDocument';
 
 export default function Home() {
     const account = useCurrentAccount();
-    const [uploadState, setUploadState] = useState<UploadState>(INITIAL_STATE);
+    const { uploadState, setUploadState, selectFile, upload, reset } = useWalrusUpload();
+    const { register } = useRegisterDocument();
 
-    function handleFileSelect(file: File) {
-        setUploadState({
-            ...INITIAL_STATE,
-            file,
-            status: 'hashing',
-            hash: null,
-        });
-
-        // Simulate hashing delay
-        setTimeout(() => {
-            setUploadState((prev) => ({
-                ...prev,
-                hash: DUMMY_RESULT.fileHash,
-                status: 'idle',
-            }));
-        }, 1000);
-    }
-
-    function handleClear() {
-        setUploadState(INITIAL_STATE);
-    }
-
-    function handleNotarize() {
+    async function handleNotarize() {
         if (!uploadState.file || !uploadState.hash) return;
 
-        // Simulate the full flow with dummy data
-        setUploadState((prev) => ({ ...prev, status: 'uploading' }));
+        const uploadResult = await upload();
+        if (!uploadResult) return;
 
-        setTimeout(() => {
-            setUploadState((prev) => ({ ...prev, status: 'registering' }));
-        }, 1500);
+        setUploadState((prev) => ({ ...prev, status: 'registering' }));
 
-        setTimeout(() => {
+        const document = await register({
+            blobId: uploadResult.blobId,
+            fileName: uploadState.file.name,
+            fileHash: uploadResult.hash,
+            fileSize: uploadState.file.size,
+        });
+
+        if (!document) {
             setUploadState((prev) => ({
                 ...prev,
-                status: 'done',
-                result: DUMMY_RESULT,
+                status: 'error',
+                error: 'Failed to register document on Sui.',
             }));
-        }, 3000);
+            return;
+        }
+
+        setUploadState((prev) => ({
+            ...prev,
+            status: 'done',
+            result: document,
+        }));
     }
 
     const isReady =
@@ -104,12 +74,12 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Upload area — hide when done */}
+            {/* Upload area */}
             {uploadState.status !== 'done' && (
                 <div className="space-y-4">
                     {!uploadState.file && (
                         <UploadBox
-                            onFileSelect={handleFileSelect}
+                            onFileSelect={selectFile}
                             disabled={!account || isProcessing}
                         />
                     )}
@@ -117,7 +87,7 @@ export default function Home() {
                     {uploadState.file && (
                         <FilePreview
                             uploadState={uploadState}
-                            onClear={handleClear}
+                            onClear={reset}
                         />
                     )}
 
@@ -128,10 +98,10 @@ export default function Home() {
                         />
                     )}
 
-                    {/* Notarize button */}
                     {isReady && (
                         <button
                             onClick={handleNotarize}
+                            disabled={isProcessing}
                             className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
                         >
                             Notarize Document
@@ -182,7 +152,7 @@ export default function Home() {
                             SuiScan
                         </a>
                         <button
-                            onClick={handleClear}
+                            onClick={reset}
                             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition-colors"
                         >
                             Notarize Another

@@ -1,63 +1,28 @@
 // src/pages/Verify.tsx
-import { useState, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import VerificationCard from '../components/verify/VerificationCard';
-import type { VerificationResult } from '../types/document';
+import { useVerifyDocument } from '../hooks/useVerifyDocument';
 
-// Dummy data for UI testing
-const DUMMY_VERIFICATION: VerificationResult = {
-    isValid: true,
-    message: 'This document was found on Sui and its hash matches the Walrus blob.',
-    document: {
-        id: '0xabc001',
-        blobId: 'blobABC001XYZ',
-        fileName: 'contract_v2.pdf',
-        fileSize: 204800,
-        fileHash: 'a3f1c2e4b5d6789012345678901234567890abcdef1234567890abcdef123456',
-        owner: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-        timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
-        txDigest: '7xKpQ2mNvL9rT4wYhZbUcDsEfGiJoAkBlMnOpQrStUvWxYz',
-    },
-};
-
-const DUMMY_FAILED: VerificationResult = {
-    isValid: false,
-    message: 'No record found on Sui for this blob ID.',
-    document: null,
-};
-
-type PageStatus = 'idle' | 'loading' | 'done';
 
 export default function Verify() {
     const { blobId } = useParams<{ blobId: string }>();
     const [manualBlobId, setManualBlobId] = useState('');
-    const [pageStatus, setPageStatus] = useState<PageStatus>('idle');
-    const [result, setResult] = useState<VerificationResult | null>(null);
+    const { verify, isVerifying, result, reset } = useVerifyDocument();
+    const hasVerified = useRef(false);
 
-    // Auto-verify if blobId is in the URL
     useEffect(() => {
-        if (blobId) {
+        if (blobId && !hasVerified.current) {
+            hasVerified.current = true;
             verify(blobId);
         }
-    }, [blobId]);
-
-    function verify(id: string) {
-        if (!id.trim()) return;
-
-        setPageStatus('loading');
-        setResult(null);
-
-        // Simulate lookup delay
-        setTimeout(() => {
-            // Use failed result for unknown blob IDs
-            const found = id === DUMMY_VERIFICATION.document?.blobId;
-            setResult(found ? DUMMY_VERIFICATION : DUMMY_FAILED);
-            setPageStatus('done');
-        }, 1500);
-    }
+    }, [blobId, verify]);
 
     function handleManualSearch() {
+        if (!manualBlobId.trim()) return;
+        reset();
         verify(manualBlobId);
     }
 
@@ -95,7 +60,7 @@ export default function Verify() {
                     />
                     <button
                         onClick={handleManualSearch}
-                        disabled={!manualBlobId.trim() || pageStatus === 'loading'}
+                        disabled={!manualBlobId.trim() || isVerifying}
                         className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-50 transition-colors"
                     >
                         <Search className="h-4 w-4" />
@@ -112,24 +77,17 @@ export default function Verify() {
                 </div>
             )}
 
-            {/* Loading state */}
-            {pageStatus === 'loading' && (
+            {/* Loading */}
+            {isVerifying && (
                 <div className="rounded-xl border border-gray-700 bg-gray-900 p-8 text-center">
-                    <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-700 border-t-blue-400 mb-4" />
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-400 mb-4" />
                     <p className="text-sm text-gray-400">Looking up record on Sui...</p>
                 </div>
             )}
 
             {/* Result */}
-            {pageStatus === 'done' && result && (
+            {!isVerifying && result.message && (
                 <VerificationCard result={result} />
-            )}
-
-            {/* Hint for manual testing */}
-            {!blobId && pageStatus === 'idle' && (
-                <p className="text-xs text-gray-600 text-center">
-                    Try entering <span className="font-mono">blobABC001XYZ</span> to see a verified result.
-                </p>
             )}
 
         </div>

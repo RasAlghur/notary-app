@@ -1,42 +1,10 @@
 // src/pages/Dashboard.tsx
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, ExternalLink, ArrowRight } from 'lucide-react';
+import { FileText, ExternalLink, ArrowRight, Loader2 } from 'lucide-react';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
+import { getDocumentsByOwner } from '../lib/tatum';
 import type { NotarizedDocument } from '../types/document';
-
-// Dummy data for UI testing
-const DUMMY_DOCUMENTS: NotarizedDocument[] = [
-    {
-        id: '0xabc001',
-        blobId: 'blobABC001XYZ',
-        fileName: 'contract_v2.pdf',
-        fileSize: 204800,
-        fileHash: 'a3f1c2e4b5d6789012345678901234567890abcdef1234567890abcdef123456',
-        owner: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-        timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2,
-        txDigest: '7xKpQ2mNvL9rT4wYhZbUcDsEfGiJoAkBlMnOpQrStUvWxYz',
-    },
-    {
-        id: '0xabc002',
-        blobId: 'blobDEF002XYZ',
-        fileName: 'proposal_final.pdf',
-        fileSize: 512000,
-        fileHash: 'b4g2d3f5c6e7890123456789012345678901bcdefg2345678901bcdefg234567',
-        owner: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-        timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5,
-        txDigest: '8yLqR3nOwM0sU5xZiAcVdTfHgJkPbLcMnQrSuTvXyZ',
-    },
-    {
-        id: '0xabc003',
-        blobId: 'blobGHI003XYZ',
-        fileName: 'nda_signed.txt',
-        fileSize: 8192,
-        fileHash: 'c5h3e4g6d7f8901234567890123456789012cdefgh3456789012cdefgh345678',
-        owner: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
-        timestamp: Date.now() - 1000 * 60 * 60 * 24 * 10,
-        txDigest: '9zMrS4oPxN1tV6yAjBwEuGhIlQcMdNoRsTuVwXyZ',
-    },
-];
 
 function formatDate(timestamp: number): string {
     return new Intl.DateTimeFormat('en-US', {
@@ -54,6 +22,42 @@ function shortenHash(hash: string): string {
     return `${hash.slice(0, 10)}...${hash.slice(-6)}`;
 }
 
+function parseDocumentFromObject(obj: unknown): NotarizedDocument | null {
+    try {
+        const raw = obj as {
+            data?: {
+                objectId?: string;
+                content?: {
+                    fields?: {
+                        blob_id?: string;
+                        file_name?: string;
+                        file_hash?: string;
+                        file_size?: string;
+                        owner?: string;
+                        timestamp?: string;
+                    };
+                };
+            };
+        };
+
+        const fields = raw?.data?.content?.fields;
+        if (!fields) return null;
+
+        return {
+            id: raw.data?.objectId ?? '',
+            blobId: fields.blob_id ?? '',
+            fileName: fields.file_name ?? '',
+            fileSize: Number(fields.file_size ?? 0),
+            fileHash: fields.file_hash ?? '',
+            owner: fields.owner ?? '',
+            timestamp: Number(fields.timestamp ?? 0),
+            txDigest: '',
+        };
+    } catch {
+        return null;
+    }
+}
+
 interface DocumentCardProps {
     document: NotarizedDocument;
 }
@@ -69,7 +73,9 @@ function DocumentCard({ document }: DocumentCardProps) {
                         <FileText className="h-4 w-4 text-blue-400" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-white">{document.fileName}</p>
+                        <p className="text-sm font-medium text-white">
+                            {document.fileName || 'Untitled Document'}
+                        </p>
                         <p className="text-xs text-gray-400">
                             {formatFileSize(document.fileSize)} · {formatDate(document.timestamp)}
                         </p>
@@ -78,7 +84,7 @@ function DocumentCard({ document }: DocumentCardProps) {
 
                 {/* SuiScan link */}
                 <a
-                    href={`https://suiscan.xyz/testnet/tx/${document.txDigest}`}
+                    href={`https://suiscan.xyz/testnet/object/${document.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 text-gray-500 hover:text-blue-400 transition-colors"
@@ -90,7 +96,9 @@ function DocumentCard({ document }: DocumentCardProps) {
             {/* Hash */}
             <div className="rounded-lg bg-gray-800 px-3 py-2">
                 <p className="text-xs text-gray-500 mb-1">SHA-256</p>
-                <p className="text-xs font-mono text-green-400">{shortenHash(document.fileHash)}</p>
+                <p className="text-xs font-mono text-green-400">
+                    {shortenHash(document.fileHash)}
+                </p>
             </div>
 
             {/* View certificate */}
@@ -102,14 +110,41 @@ function DocumentCard({ document }: DocumentCardProps) {
                 <ArrowRight className="h-4 w-4" />
             </Link>
 
-        </div>
+        </div >
     );
 }
 
 export default function Dashboard() {
     const account = useCurrentAccount();
+    const [documents, setDocuments] = useState<NotarizedDocument[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // Not connected state
+    useEffect(() => {
+        if (!account?.address) return;
+
+        async function fetchDocuments() {
+            setIsLoading(true);
+            setError(null);
+
+            try {
+                const objects = await getDocumentsByOwner(account!.address);
+                const parsed = objects
+                    .map(parseDocumentFromObject)
+                    .filter((doc): doc is NotarizedDocument => doc !== null);
+                setDocuments(parsed);
+            } catch (err) {
+                setError(
+                    err instanceof Error ? err.message : 'Failed to load documents.'
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchDocuments();
+    }, [account, account?.address]);
+
     if (!account) {
         return (
             <div className="mx-auto max-w-2xl">
@@ -132,8 +167,10 @@ export default function Dashboard() {
                 <div>
                     <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
                     <p className="mt-1 text-sm text-gray-400">
-                        {DUMMY_DOCUMENTS.length} notarized document
-                        {DUMMY_DOCUMENTS.length !== 1 ? 's' : ''}
+                        {isLoading
+                            ? 'Loading...'
+                            : `${documents.length} notarized document${documents.length !== 1 ? 's' : ''}`
+                        }
                     </p>
                 </div>
                 <Link
@@ -144,8 +181,22 @@ export default function Dashboard() {
                 </Link>
             </div>
 
+            {/* Loading */}
+            {isLoading && (
+                <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
+                </div>
+            )}
+
+            {/* Error */}
+            {error && (
+                <div className="rounded-lg border border-red-800 bg-red-500/10 p-4">
+                    <p className="text-sm text-red-400">{error}</p>
+                </div>
+            )}
+
             {/* Empty state */}
-            {DUMMY_DOCUMENTS.length === 0 && (
+            {!isLoading && !error && documents.length === 0 && (
                 <div className="rounded-xl border border-gray-700 bg-gray-900 p-12 text-center">
                     <FileText className="mx-auto h-10 w-10 text-gray-600 mb-4" />
                     <p className="text-white font-medium">No documents yet</p>
@@ -162,11 +213,13 @@ export default function Dashboard() {
             )}
 
             {/* Document list */}
-            <div className="space-y-4">
-                {DUMMY_DOCUMENTS.map((doc) => (
-                    <DocumentCard key={doc.id} document={doc} />
-                ))}
-            </div>
+            {!isLoading && documents.length > 0 && (
+                <div className="space-y-4">
+                    {documents.map((doc) => (
+                        <DocumentCard key={doc.id} document={doc} />
+                    ))}
+                </div>
+            )}
 
         </div>
     );

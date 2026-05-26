@@ -1,0 +1,7 @@
+[package]
+name = "walrus_notary"
+version = "0.0.1"
+edition = "2024.beta"
+
+[addresses]
+walrus_notary = "0xc0d22da28deb736bf9d6708952c7e34ec73cd53d89c2c553adeebab4e326fd5b"

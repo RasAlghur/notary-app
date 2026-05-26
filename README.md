@@ -6,7 +6,7 @@ A decentralized document notarization app built on Sui using Walrus storage. Upl
 
 ## What It Does
 
-WalrusNotary lets you prove a document existed at a specific point in time without lawyers, middlemen, or central servers.
+Notary lets you prove a document existed at a specific point in time without lawyers, middlemen, or central servers.
 
 1. Upload a file (PDF, PNG, JPG, or TXT)
 2. The file is hashed client-side using SHA-256
@@ -44,7 +44,7 @@ WalrusNotary lets you prove a document existed at a specific point in time witho
 ## Project Structure
 
 ```
-walrus-notary/
+notary-app/
 ├── src/
 │   ├── components/
 │   │   ├── wallet/         # Wallet connect + disconnect
@@ -68,7 +68,7 @@ walrus-notary/
 │   └── types/
 │       └── document.ts     # Shared TypeScript types
 ├── move/
-│   └── walrus_notary/
+│   └── notary/
 │       ├── Move.toml
 │       └── sources/
 │           └── registry.move   # NotaryRecord struct + register fn
