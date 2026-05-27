@@ -3,7 +3,7 @@ import { CheckCircle2, XCircle, FileText, Copy, ExternalLink, Loader2 } from 'lu
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
 import type { VerificationResult } from '../../types/document';
-import { WALRUS_URLS } from '../../lib/constants';
+import { NETWORK, SUI_SCAN_URLS, WALRUS_URLS } from '../../lib/constants';
 
 interface BlobPreviewProps {
     blobId: string;
@@ -266,7 +266,7 @@ export default function VerificationCard({ result }: VerificationCardProps) {
                         View Original File on Walrus
                     </a>
                     <a
-                        href={`https://suiscan.xyz/testnet/tx/${document.txDigest}`}
+                        href={`${SUI_SCAN_URLS[NETWORK]}tx/${document.txDigest}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:border-gray-500 transition-colors"

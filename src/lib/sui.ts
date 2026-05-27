@@ -1,11 +1,11 @@
 // src/lib/sui.ts
 import { createDAppKit } from '@mysten/dapp-kit-react';
 import { SuiGrpcClient } from '@mysten/sui/grpc';
-import { NETWORK } from '@/lib/constants';
+import { NETWORK } from './constants';
 
 const GRPC_URLS = {
-    testnet: 'https://fullnode.testnet.sui.io:443',
-    mainnet: 'https://fullnode.mainnet.sui.io:443',
+    testnet: 'https://fullnode.testnet.sui.io',
+    mainnet: 'https://fullnode.mainnet.sui.io',
 } as const;
 
 export const dAppKit = createDAppKit({

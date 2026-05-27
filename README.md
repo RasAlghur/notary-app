@@ -197,6 +197,7 @@ Devnet:   https://sui-devnet.gateway.tatum.io
 - [ ] Mainnet deployment
 - [ ] Batch notarization
 - [ ] Email certificate delivery
+- [ ] AI AGENT
 
 ---
 

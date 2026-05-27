@@ -1,6 +1,6 @@
 // src/hooks/useRegisterDocument.ts
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
-import { registerDocument } from "../lib/tatum";
+import { getTransaction, registerDocument } from "../lib/tatum";
 import type { NotarizedDocument } from "../types/document";
 
 export function useRegisterDocument() {
@@ -31,7 +31,8 @@ export function useRegisterDocument() {
 
                     if (result.FailedTransaction) {
                         throw new Error(
-                            result.FailedTransaction.status.error?.message ?? "Transaction failed"
+                            result.FailedTransaction.status.error?.message ??
+                            "Transaction failed"
                         );
                     }
 
@@ -39,8 +40,20 @@ export function useRegisterDocument() {
                 },
             });
 
+            const tx = await getTransaction(digest);
+
+            const createdObjectId =
+                (tx as any)?.objectChanges?.find(
+                    (change: any) =>
+                        change?.type === "created" &&
+                        typeof change?.objectType === "string" &&
+                        change.objectType.includes("NotaryRecord")
+                )?.objectId ??
+                (tx as any)?.effects?.created?.[0]?.reference?.objectId ??
+                "";
+
             return {
-                id: "",
+                id: createdObjectId,
                 blobId: params.blobId,
                 fileName: params.fileName,
                 fileSize: params.fileSize,

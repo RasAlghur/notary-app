@@ -15,7 +15,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/verify" element={<Verify />} />
-          <Route path="/verify/:blobId" element={<Verify />} />
+          <Route path="/verify/:recordId" element={<Verify />} />
         </Routes>
       </Container>
     </div>

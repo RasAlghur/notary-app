@@ -5,6 +5,7 @@ import { FileText, ExternalLink, ArrowRight, Loader2 } from 'lucide-react';
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { getDocumentsByOwner } from '../lib/tatum';
 import type { NotarizedDocument } from '../types/document';
+import { NETWORK, SUI_SCAN_URLS } from '../lib/constants';
 
 function formatDate(timestamp: number): string {
     return new Intl.DateTimeFormat('en-US', {
@@ -20,42 +21,6 @@ function formatFileSize(bytes: number): string {
 
 function shortenHash(hash: string): string {
     return `${hash.slice(0, 10)}...${hash.slice(-6)}`;
-}
-
-function parseDocumentFromObject(obj: unknown): NotarizedDocument | null {
-    try {
-        const raw = obj as {
-            data?: {
-                objectId?: string;
-                content?: {
-                    fields?: {
-                        blob_id?: string;
-                        file_name?: string;
-                        file_hash?: string;
-                        file_size?: string;
-                        owner?: string;
-                        timestamp?: string;
-                    };
-                };
-            };
-        };
-
-        const fields = raw?.data?.content?.fields;
-        if (!fields) return null;
-
-        return {
-            id: raw.data?.objectId ?? '',
-            blobId: fields.blob_id ?? '',
-            fileName: fields.file_name ?? '',
-            fileSize: Number(fields.file_size ?? 0),
-            fileHash: fields.file_hash ?? '',
-            owner: fields.owner ?? '',
-            timestamp: Number(fields.timestamp ?? 0),
-            txDigest: '',
-        };
-    } catch {
-        return null;
-    }
 }
 
 interface DocumentCardProps {
@@ -84,7 +49,7 @@ function DocumentCard({ document }: DocumentCardProps) {
 
                 {/* SuiScan link */}
                 <a
-                    href={`https://suiscan.xyz/testnet/object/${document.id}`}
+                    href={`${SUI_SCAN_URLS[NETWORK]}object/${document.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 text-gray-500 hover:text-blue-400 transition-colors"
@@ -101,16 +66,24 @@ function DocumentCard({ document }: DocumentCardProps) {
                 </p>
             </div>
 
+            {/* Blob ID */}
+            <div className="rounded-lg bg-gray-800 px-3 py-2">
+                <p className="text-xs text-gray-500 mb-1">Walrus Blob ID</p>
+                <p className="text-xs font-mono text-blue-400 truncate">
+                    {document.blobId}
+                </p>
+            </div>
+
             {/* View certificate */}
             <Link
-                to={`/verify/${document.blobId}`}
+                to={`/verify/${document.id}`}
                 className="flex items-center justify-between rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-400 hover:text-white hover:border-gray-500 transition-colors"
             >
                 <span>View Certificate</span>
                 <ArrowRight className="h-4 w-4" />
             </Link>
 
-        </div >
+        </div>
     );
 }
 
@@ -123,26 +96,28 @@ export default function Dashboard() {
     useEffect(() => {
         if (!account?.address) return;
 
+        let cancelled = false;
+
         async function fetchDocuments() {
             setIsLoading(true);
             setError(null);
-
             try {
-                const objects = await getDocumentsByOwner(account!.address);
-                const parsed = objects
-                    .map(parseDocumentFromObject)
-                    .filter((doc): doc is NotarizedDocument => doc !== null);
-                setDocuments(parsed);
+                const docs = await getDocumentsByOwner(account!.address);
+                if (!cancelled) setDocuments(docs);
             } catch (err) {
-                setError(
+                if (!cancelled) setError(
                     err instanceof Error ? err.message : 'Failed to load documents.'
                 );
             } finally {
-                setIsLoading(false);
+                if (!cancelled) setIsLoading(false);
             }
         }
 
         fetchDocuments();
+
+        return () => {
+            cancelled = true;
+        };
     }, [account, account?.address]);
 
     if (!account) {

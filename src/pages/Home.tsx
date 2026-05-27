@@ -1,11 +1,13 @@
 // src/pages/Home.tsx
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { CheckCircle2, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import UploadBox from '../components/upload/UploadBox';
 import FilePreview from '../components/upload/FilePreview';
 import UploadProgress from '../components/upload/UploadProgress';
 import { useWalrusUpload } from '../hooks/useWalrusUpload';
 import { useRegisterDocument } from '../hooks/useRegisterDocument';
+import { NETWORK, SUI_SCAN_URLS } from '../lib/constants';
 
 export default function Home() {
     const account = useCurrentAccount();
@@ -54,8 +56,6 @@ export default function Home() {
 
     return (
         <div className="mx-auto max-w-2xl space-y-8">
-
-            {/* Header */}
             <div>
                 <h1 className="text-2xl font-semibold text-white">
                     Notarize a Document
@@ -65,7 +65,6 @@ export default function Home() {
                 </p>
             </div>
 
-            {/* Wallet warning */}
             {!account && (
                 <div className="rounded-lg border border-yellow-800 bg-yellow-500/10 p-4">
                     <p className="text-sm text-yellow-400">
@@ -74,7 +73,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Upload area */}
             {uploadState.status !== 'done' && (
                 <div className="space-y-4">
                     {!uploadState.file && (
@@ -110,7 +108,6 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Success state */}
             {uploadState.status === 'done' && uploadState.result && (
                 <div className="rounded-xl border border-green-800 bg-green-500/5 p-6 space-y-4">
                     <div className="flex items-center gap-3">
@@ -136,14 +133,14 @@ export default function Home() {
                     </div>
 
                     <div className="flex gap-3">
-                        <a
-                            href={`/verify/${uploadState.result.blobId}`}
+                        <Link
+                            to={`/verify/${uploadState.result.id}`}
                             className="flex-1 rounded-lg border border-gray-700 px-4 py-2 text-center text-sm text-gray-300 hover:text-white transition-colors"
                         >
                             View Certificate
-                        </a>
+                        </Link>
                         <a
-                            href={`https://suiscan.xyz/testnet/tx/${uploadState.result.txDigest}`}
+                            href={`${SUI_SCAN_URLS[NETWORK]}/tx/${uploadState.result.txDigest}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
@@ -158,10 +155,8 @@ export default function Home() {
                             Notarize Another
                         </button>
                     </div>
-                </div >
-            )
-            }
-
-        </div >
+                </div>
+            )}
+        </div>
     );
 }

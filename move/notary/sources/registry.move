@@ -1,10 +1,10 @@
-// move/notary/sources/registry.move
 module notary::registry {
-    use std::string::String;
+    use std::string::{Self, String};
+
     use sui::clock::{Self, Clock};
     use sui::event;
-
-    // === Object ===
+    use sui::object::{Self, UID};
+    use sui::tx_context::{Self, TxContext};
 
     public struct NotaryRecord has key, store {
         id: UID,
@@ -16,8 +16,6 @@ module notary::registry {
         timestamp: u64,
     }
 
-    // === Event ===
-
     public struct DocumentRegistered has copy, drop {
         blob_id: String,
         file_hash: String,
@@ -25,15 +23,11 @@ module notary::registry {
         timestamp: u64,
     }
 
-    // === Errors ===
-
     const EEmptyBlobId: u64 = 1;
     const EEmptyFileHash: u64 = 2;
     const EEmptyFileName: u64 = 3;
 
-    // === Function ===
-
-    public fun register_document(
+    public entry fun register_document(
         blob_id: String,
         file_name: String,
         file_hash: String,
@@ -41,9 +35,9 @@ module notary::registry {
         clock: &Clock,
         ctx: &mut TxContext,
     ): NotaryRecord {
-        assert!(std::string::length(&blob_id) > 0, EEmptyBlobId);
-        assert!(std::string::length(&file_hash) > 0, EEmptyFileHash);
-        assert!(std::string::length(&file_name) > 0, EEmptyFileName);
+        assert!(string::length(&blob_id) > 0, EEmptyBlobId);
+        assert!(string::length(&file_hash) > 0, EEmptyFileHash);
+        assert!(string::length(&file_name) > 0, EEmptyFileName);
 
         let owner = tx_context::sender(ctx);
         let timestamp = clock::timestamp_ms(clock);
