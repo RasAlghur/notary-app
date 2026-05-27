@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { CheckCircle2, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -38,11 +37,7 @@ export default function Home() {
             return;
         }
 
-        setUploadState((prev) => ({
-            ...prev,
-            status: 'done',
-            result: document,
-        }));
+        setUploadState((prev) => ({ ...prev, status: 'done', result: document }));
     }
 
     const isReady =
@@ -50,16 +45,14 @@ export default function Home() {
         uploadState.hash &&
         uploadState.status === 'idle';
 
-    const isProcessing = ['hashing', 'uploading', 'registering'].includes(
+    const isProcessing = ['hashing', 'uploading', 'certifying', 'registering'].includes(
         uploadState.status
     );
 
     return (
         <div className="mx-auto max-w-2xl space-y-8">
             <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Notarize a Document
-                </h1>
+                <h1 className="text-2xl font-semibold text-white">Notarize a Document</h1>
                 <p className="mt-1 text-sm text-gray-400">
                     Upload a file to permanently record its existence on Sui via Walrus.
                 </p>
@@ -76,24 +69,15 @@ export default function Home() {
             {uploadState.status !== 'done' && (
                 <div className="space-y-4">
                     {!uploadState.file && (
-                        <UploadBox
-                            onFileSelect={selectFile}
-                            disabled={!account || isProcessing}
-                        />
+                        <UploadBox onFileSelect={selectFile} disabled={!account || isProcessing} />
                     )}
 
                     {uploadState.file && (
-                        <FilePreview
-                            uploadState={uploadState}
-                            onClear={reset}
-                        />
+                        <FilePreview uploadState={uploadState} onClear={reset} />
                     )}
 
                     {uploadState.status !== 'idle' && (
-                        <UploadProgress
-                            status={uploadState.status}
-                            error={uploadState.error}
-                        />
+                        <UploadProgress status={uploadState.status} error={uploadState.error} />
                     )}
 
                     {isReady && (
@@ -112,9 +96,7 @@ export default function Home() {
                 <div className="rounded-xl border border-green-800 bg-green-500/5 p-6 space-y-4">
                     <div className="flex items-center gap-3">
                         <CheckCircle2 className="h-6 w-6 text-green-400" />
-                        <p className="font-semibold text-green-400">
-                            Document Notarized Successfully
-                        </p>
+                        <p className="font-semibold text-green-400">Document Notarized Successfully</p>
                     </div>
 
                     <div className="rounded-lg bg-gray-900 border border-gray-800 p-4 space-y-2">
@@ -140,7 +122,7 @@ export default function Home() {
                             View Certificate
                         </Link>
                         <a
-                            href={`${SUI_SCAN_URLS[NETWORK]}/tx/${uploadState.result.txDigest}`}
+                            href={`${SUI_SCAN_URLS[NETWORK]}tx/${uploadState.result.txDigest}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"

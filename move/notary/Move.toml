@@ -4,4 +4,4 @@ version = "0.0.1"
 edition = "2024.beta"
 
 [addresses]
-walrus_notary = "0xee99858d94d0414a4591dc2de972d9a3f740d41c47583dacf6d4decf3ef3fc36"
+walrus_notary = "0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363"

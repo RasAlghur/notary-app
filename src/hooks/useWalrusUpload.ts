@@ -1,4 +1,3 @@
-// src/hooks/useWalrusUpload.ts
 import { useState } from 'react';
 import { hashFile } from '../lib/hash';
 import { uploadToWalrus } from '../lib/walrus';
@@ -21,20 +20,11 @@ export function useWalrusUpload() {
     }
 
     async function selectFile(file: File) {
-        setUploadState({
-            ...INITIAL_STATE,
-            file,
-            status: 'hashing',
-        });
+        setUploadState({ ...INITIAL_STATE, file, status: 'hashing' });
 
         try {
             const hash = await hashFile(file);
-
-            setUploadState((prev) => ({
-                ...prev,
-                hash,
-                status: 'idle',
-            }));
+            setUploadState((prev) => ({ ...prev, hash, status: 'idle' }));
         } catch (err) {
             setUploadState((prev) => ({
                 ...prev,
@@ -48,12 +38,12 @@ export function useWalrusUpload() {
         const { file, hash } = uploadState;
         if (!file || !hash) return null;
 
-        setUploadState((prev) => ({ ...prev, status: 'uploading' }));
-
         try {
-            const { blobId } = await uploadToWalrus(file);
+            const result = await uploadToWalrus(file, (status) => {
+                setUploadState((prev) => ({ ...prev, status }));
+            });
 
-            return { blobId, hash };
+            return { blobId: result.blobId, hash };
         } catch (err) {
             setUploadState((prev) => ({
                 ...prev,
@@ -64,11 +54,5 @@ export function useWalrusUpload() {
         }
     }
 
-    return {
-        uploadState,
-        setUploadState,
-        selectFile,
-        upload,
-        reset,
-    };
+    return { uploadState, setUploadState, selectFile, upload, reset };
 }

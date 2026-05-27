@@ -1,22 +1,22 @@
 // src/types/document.ts
-export type DocumentStatus = 'idle' | 'hashing' | 'uploading' | 'registering' | 'done' | 'error';
+export type DocumentStatus = 'idle' | 'hashing' | 'uploading' | 'certifying' | 'registering' | 'done' | 'error';
 
 export interface NotarizedDocument {
-    id: string;               // Sui object ID (on-chain)
-    blobId: string;           // Walrus blob ID
-    fileName: string;         // Original file name
-    fileSize: number;         // File size in bytes
-    fileHash: string;         // SHA-256 hash of the file
-    owner: string;            // Sui wallet address
-    timestamp: number;        // Unix timestamp in ms
-    txDigest: string;         // Sui transaction digest
+    id: string;
+    blobId: string;
+    fileName: string;
+    fileSize: number;
+    fileHash: string;
+    owner: string;
+    timestamp: number;
+    txDigest: string;
 }
 
 export interface UploadState {
     file: File | null;
     hash: string | null;
     status: DocumentStatus;
-    progress: number;         // 0 - 100
+    progress: number;
     error: string | null;
     result: NotarizedDocument | null;
 }

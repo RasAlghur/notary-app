@@ -1,7 +1,12 @@
 // api/sui.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+console.log('SUI API handler loaded');
 const NETWORK = process.env.VITE_SUI_NETWORK || 'testnet';
+const TATUM_API_KEY = process.env.VITE_TATUM_API_KEY;
+
+console.log(`SUI API handler initialized with network: ${NETWORK}`);
+console.log(`Using Tatum API key: ${TATUM_API_KEY ? 'Yes' : 'No'}`);
 
 const RPC_URL =
     NETWORK === 'mainnet'
@@ -21,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': process.env.VITE_TATUM_API_KEY!,  // ← header instead
+                'x-api-key': TATUM_API_KEY!,
             },
             body: JSON.stringify(req.body),
         });

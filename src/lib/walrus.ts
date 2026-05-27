@@ -1,86 +1,62 @@
-// src/lib/walrus.ts
-import { WALRUS_URLS } from '../lib/constants';
+import { WALRUS_URLS } from './constants';
 
-export interface WalrusUploadResponse {
+export interface WalrusUploadResult {
     blobId: string;
-    endEpoch: number;
-    blobObject?: {
-        id: string;
-        storedEpoch: number;
-        blobId: string;
-        size: number;
-        erasureCodeType: string;
-        certifiedEpoch: number;
-        storage: {
-            id: string;
-            startEpoch: number;
-            endEpoch: number;
-            storageSize: number;
-        };
-    };
+    jobId: string;
+    downloadUrl: string;
+}
+
+async function pollUntilCertified(jobId: string): Promise<string> {
+    const MAX_ATTEMPTS = 30; // 60 seconds max
+    const INTERVAL_MS = 2000;
+
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+        await new Promise((r) => setTimeout(r, INTERVAL_MS));
+
+        const res = await fetch(`/api/walrus-status?jobId=${jobId}`);
+        if (!res.ok) throw new Error('Failed to poll upload status');
+
+        const data = await res.json();
+
+        if (data.status === 'CERTIFIED') {
+            return data.downloadUrlByQuiltId ?? '';
+        }
+        if (data.status === 'FAILED') {
+            throw new Error(data.errorMessage || 'Walrus certification failed');
+        }
+        // PENDING / UPLOADING — keep polling
+    }
+
+    throw new Error('Walrus certification timed out');
 }
 
 export async function uploadToWalrus(
     file: File,
-    epochs: number = 5
-): Promise<WalrusUploadResponse> {
-    const url = `${WALRUS_URLS.publisher}/v1/blobs?epochs=${epochs}`;
+    onStatus?: (status: 'uploading' | 'certifying') => void,
+): Promise<WalrusUploadResult> {
+    onStatus?.('uploading');
 
-    const response = await fetch(url, {
-        method: 'PUT',
-        body: file,
-        headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-        },
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/api/walrus-upload', {
+        method: 'POST',
+        body: formData,
     });
 
-    if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Walrus upload failed: ${error}`);
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `Upload failed: ${res.statusText}`);
     }
 
-    const data = await response.json();
+    const { jobId, blobId } = await res.json();
 
-    if (data.newlyCreated) {
-        return {
-            blobId: data.newlyCreated.blobObject.blobId,
-            endEpoch: data.newlyCreated.blobObject.storage.endEpoch,
-            blobObject: data.newlyCreated.blobObject,
-        };
-    }
+    onStatus?.('certifying');
+    const downloadUrl = await pollUntilCertified(jobId);
 
-    if (data.alreadyCertified) {
-        return {
-            blobId: data.alreadyCertified.blobId,
-            endEpoch: data.alreadyCertified.endEpoch,
-        };
-    }
-
-    throw new Error('Unexpected Walrus response format');
-}
-
-export async function readFromWalrus(blobId: string): Promise<Blob> {
-  const url = `${WALRUS_URLS.aggregator}/v1/blobs/${blobId}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Walrus read failed: ${response.statusText}`);
-  }
-
-  return response.blob();
-}
-
-export async function checkBlobExists(blobId: string): Promise<boolean> {
-  try {
-    const url = `${WALRUS_URLS.aggregator}/v1/blobs/${blobId}`;
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
-  } catch {
-    return false;
-  }
+    return { blobId, jobId, downloadUrl };
 }
 
 export function getWalrusBlobUrl(blobId: string): string {
-  return `${WALRUS_URLS.aggregator}/v1/blobs/${blobId}`;
+    return `${WALRUS_URLS.aggregator}/v1/blobs/${blobId}`;
 }

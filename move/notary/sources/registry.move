@@ -27,7 +27,7 @@ module notary::registry {
     const EEmptyFileHash: u64 = 2;
     const EEmptyFileName: u64 = 3;
 
-    public entry fun register_document(
+    public fun register_document(
         blob_id: String,
         file_name: String,
         file_hash: String,
