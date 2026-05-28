@@ -49,7 +49,7 @@ function DocumentCard({ document }: DocumentCardProps) {
 
                 {/* SuiScan link */}
                 <a
-                    href={`${SUI_SCAN_URLS[NETWORK]}object/${document.id}`}
+                    href={`${SUI_SCAN_URLS[NETWORK as keyof typeof SUI_SCAN_URLS]}object/${document.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 text-gray-500 hover:text-blue-400 transition-colors"

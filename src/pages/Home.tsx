@@ -122,7 +122,7 @@ export default function Home() {
                             View Certificate
                         </Link>
                         <a
-                            href={`${SUI_SCAN_URLS[NETWORK]}tx/${uploadState.result.txDigest}`}
+                            href={`${SUI_SCAN_URLS[NETWORK as keyof typeof SUI_SCAN_URLS]}tx/${uploadState.result.txDigest}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors"
