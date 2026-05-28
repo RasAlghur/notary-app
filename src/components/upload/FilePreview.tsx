@@ -1,17 +1,6 @@
 // src/components/upload/FilePreview.tsx
 import { FileText, X } from 'lucide-react';
-import type { UploadState } from '../../types/document';
-
-interface FilePreviewProps {
-    uploadState: UploadState;
-    onClear: () => void;
-}
-
-function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+import { formatFileSize, type FilePreviewProps } from '../../types/components';
 
 export default function FilePreview({ uploadState, onClear }: FilePreviewProps) {
     const { file, hash } = uploadState;

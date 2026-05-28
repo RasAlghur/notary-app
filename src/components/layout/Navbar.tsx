@@ -3,12 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FileCheck } from 'lucide-react';
 import { clsx } from 'clsx';
 import ConnectWallet from '../../components/wallet/ConnectWallet';
-
-const navLinks = [
-    { label: 'Notarize', href: '/' },
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Verify', href: '/verify' },
-];
+import { navLinks } from '../../types/components';
 
 export default function Navbar() {
     const location = useLocation();

@@ -2,14 +2,7 @@
 import { useState, useCallback } from 'react';
 import { suiClient } from '../lib/tatum';
 import type { VerificationResult } from '../types/document';
-
-export type VerifyStep = 'idle' | 'fetching' | 'checking-walrus' | 'done' | 'error';
-
-const INITIAL_RESULT: VerificationResult = {
-    isValid: false,
-    document: null,
-    message: '',
-};
+import { INITIAL_RESULT, type VerifyStep } from '../types/hooks';
 
 export function useVerifyDocument() {
     const [isVerifying, setIsVerifying] = useState(false);

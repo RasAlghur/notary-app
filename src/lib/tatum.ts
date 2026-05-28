@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/lib/tatum.ts
 import { SuiJsonRpcClient } from '@mysten/sui/jsonRpc';
 import { Transaction } from '@mysten/sui/transactions';
@@ -5,7 +6,7 @@ import type { NotarizedDocument } from '../types/document';
 import { NETWORK, PACKAGE_ID, MODULE_NAME, REGISTRY_FUNCTION } from './constants';
 
 export const suiClient = new SuiJsonRpcClient({
-    url: '/api/sui',  // Vite proxy in dev, Vercel function in prod — same path either way
+    url: '/api/sui',
     network: NETWORK,
 });
 
@@ -87,7 +88,7 @@ export async function registerDocument(params: RegisterDocumentParams): Promise<
         ],
     });
 
-    tx.transferObjects([record], tx.pure.address(senderAddress));  // ← was missing
+    tx.transferObjects([record], tx.pure.address(senderAddress));
 
     const { digest } = await signAndExecute({ transaction: tx });
     return digest;

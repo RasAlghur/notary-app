@@ -2,20 +2,7 @@
 import { useRef, useState } from 'react';
 import { Upload, FolderOpen } from 'lucide-react';
 import { clsx } from 'clsx';
-
-interface UploadBoxProps {
-    onFileSelect: (file: File) => void;
-    disabled?: boolean;
-}
-
-const ACCEPTED_TYPES = [
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'text/plain',
-];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+import { ACCEPTED_TYPES, MAX_FILE_SIZE, type UploadBoxProps } from '../../types/components';
 
 export default function UploadBox({ onFileSelect, disabled }: UploadBoxProps) {
     const inputRef = useRef<HTMLInputElement>(null);

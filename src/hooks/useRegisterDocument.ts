@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/hooks/useRegisterDocument.ts
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { getTransaction, registerDocument } from "../lib/tatum";

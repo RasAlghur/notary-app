@@ -1,34 +1,6 @@
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { DocumentStatus } from '../../types/document';
-
-interface UploadProgressProps {
-    status: DocumentStatus;
-    error: string | null;
-}
-
-const steps: { status: DocumentStatus; label: string }[] = [
-    { status: 'hashing', label: 'Computing SHA-256 hash' },
-    { status: 'uploading', label: 'Uploading file to Walrus via Tatum' },
-    { status: 'certifying', label: 'Waiting for on-chain certification' },
-    { status: 'registering', label: 'Registering proof on Sui' },
-    { status: 'done', label: 'Document notarized successfully' },
-];
-
-const order = ['hashing', 'uploading', 'certifying', 'registering', 'done'];
-
-function getStepState(
-    stepStatus: DocumentStatus,
-    currentStatus: DocumentStatus
-): 'pending' | 'active' | 'done' | 'error' {
-    const stepIndex = order.indexOf(stepStatus);
-    const currentIndex = order.indexOf(currentStatus);
-
-    if (currentStatus === 'error') return stepIndex <= currentIndex ? 'error' : 'pending';
-    if (stepIndex < currentIndex) return 'done';
-    if (stepIndex === currentIndex) return 'active';
-    return 'pending';
-}
+import { getStepState, type UploadProgressProps, documentSteps } from '../../types/components';
 
 export default function UploadProgress({ status, error }: UploadProgressProps) {
     if (status === 'idle') return null;
@@ -36,7 +8,7 @@ export default function UploadProgress({ status, error }: UploadProgressProps) {
     return (
         <div className="rounded-xl border border-gray-700 bg-gray-900 p-5">
             <div className="space-y-4">
-                {steps.map((step) => {
+                {documentSteps.map((step) => {
                     const state = getStepState(step.status, status);
                     return (
                         <div key={step.status} className="flex items-center gap-3">

@@ -1,11 +1,6 @@
 // src/components/layout/Container.tsx
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
-
-interface ContainerProps {
-    children: ReactNode;
-    className?: string;
-}
+import type { ContainerProps } from '../../types/components';
 
 export default function Container({ children, className }: ContainerProps) {
     return (

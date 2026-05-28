@@ -1,10 +1,5 @@
+import type { WalrusUploadResult } from '../types/lib';
 import { WALRUS_URLS } from './constants';
-
-export interface WalrusUploadResult {
-    blobId: string;
-    jobId: string;
-    downloadUrl: string;
-}
 
 async function pollUntilCertified(jobId: string): Promise<string> {
     const MAX_ATTEMPTS = 30; // 60 seconds max

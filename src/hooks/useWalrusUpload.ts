@@ -3,15 +3,7 @@ import { useState } from 'react';
 import { hashFile } from '../lib/hash';
 import { uploadToWalrus } from '../lib/walrus';
 import type { UploadState } from '../types/document';
-
-const INITIAL_STATE: UploadState = {
-    file: null,
-    hash: null,
-    status: 'idle',
-    progress: 0,
-    error: null,
-    result: null,
-};
+import { INITIAL_STATE } from '../types/hooks';
 
 export function useWalrusUpload() {
     const [uploadState, setUploadState] = useState<UploadState>(INITIAL_STATE);
