@@ -5,7 +5,7 @@ export const config = {
     api: { bodyParser: false },
 };
 
-const TATUM_API_KEY = process.env.VITE_TATUM_API_KEY;
+const TATUM_API_KEY = process.env.TATUM_API_KEY;
 console.log(`Walrus upload handler initialized. Tatum API key: ${TATUM_API_KEY ? 'Yes' : 'No'}`);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

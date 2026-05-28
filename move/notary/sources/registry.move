@@ -1,3 +1,4 @@
+// notary/sources/registry.move
 module notary::registry {
     use std::string::{Self, String};
 

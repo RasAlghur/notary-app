@@ -1,3 +1,4 @@
+// src/hooks/useWalrusUpload.ts
 import { useState } from 'react';
 import { hashFile } from '../lib/hash';
 import { uploadToWalrus } from '../lib/walrus';

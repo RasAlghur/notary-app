@@ -2,8 +2,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 console.log('SUI API handler loaded');
-const NETWORK = process.env.VITE_SUI_NETWORK || 'testnet';
-const TATUM_API_KEY = process.env.VITE_TATUM_API_KEY;
+const NETWORK = process.env.SUI_NETWORK || 'testnet';
+const TATUM_API_KEY = process.env.TATUM_API_KEY;
 
 console.log(`SUI API handler initialized with network: ${NETWORK}`);
 console.log(`Using Tatum API key: ${TATUM_API_KEY ? 'Yes' : 'No'}`);

@@ -1,7 +1,7 @@
 // api/walrus-status.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const TATUM_API_KEY = process.env.VITE_TATUM_API_KEY;
+const TATUM_API_KEY = process.env.TATUM_API_KEY;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');

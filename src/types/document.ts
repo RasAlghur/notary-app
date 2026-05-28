@@ -4,6 +4,7 @@ export type DocumentStatus = 'idle' | 'hashing' | 'uploading' | 'certifying' | '
 export interface NotarizedDocument {
     id: string;
     blobId: string;
+    jobId?: string;
     fileName: string;
     fileSize: number;
     fileHash: string;

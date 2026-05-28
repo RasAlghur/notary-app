@@ -1,3 +1,4 @@
+// src/hooks/useVerifyDocument.ts
 import { useState, useCallback } from 'react';
 import { suiClient } from '../lib/tatum';
 import type { VerificationResult } from '../types/document';
