@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // api/walrus-download-url.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -23,8 +24,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(response.status).json({ error: 'Failed to query Tatum storage' });
             }
 
-            const data = await response.json();
-            const uploads: any[] = Array.isArray(data) ? data : (data.data ?? []);
+            const data: unknown = await response.json();
+            const uploads: any[] = Array.isArray(data)
+                ? data
+                : (typeof data === 'object' && data !== null ? (data as { data?: any[] }).data ?? [] : []);
 
             const match = uploads.find((u) => u.blobId === blobId);
             if (match) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // api/sui.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 

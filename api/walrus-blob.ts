@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // api/walrus-blob.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
@@ -43,7 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const data = await lookup.json();
-      const uploads: any[] = Array.isArray(data) ? data : (data.data ?? []);
+      const uploads: any[] = Array.isArray(data)
+        ? data
+        : typeof data === 'object' && data !== null && 'data' in data && Array.isArray((data as any).data)
+        ? (data as any).data
+        : [];
 
       match = uploads.find((u) => u.blobId === blobId);
 
