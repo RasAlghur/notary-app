@@ -269,7 +269,7 @@ Set these environment variables in your Vercel project settings:
 ### Contract
 - **Package ID:** `0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363`
 - **Network:** Sui Mainnet
-- **Explorer:** [View on SuiScan](https://suiscan.xyz/mainnet/account/0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363)
+- **Explorer:** [View on SuiVision](https://suivision.xyz/package/0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363)
 
 ---
 

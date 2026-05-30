@@ -5,6 +5,6 @@ export const MODULE_NAME = 'registry';
 export const REGISTRY_FUNCTION = 'register_document';
 
 export const SUI_SCAN_URLS = {
-    testnet: 'https://suiscan.xyz/testnet/',
-    mainnet: 'https://suiscan.xyz/mainnet/',
+    testnet: 'https://testnet.suivision.xyz/',
+    mainnet: 'https://suivision.xyz/',
 } as const;
