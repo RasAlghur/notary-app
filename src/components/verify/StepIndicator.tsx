@@ -1,7 +1,6 @@
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
-import type { VerifyStep } from "../../types/hooks";
 import clsx from "clsx";
-import { verifySteps } from "../../types/components";
+import { verifySteps, type VerifyStep } from "../../config/steps";
 
 export function StepIndicator({ currentStep }: { currentStep: VerifyStep }) {
     const order: VerifyStep[] = ['fetching', 'checking-walrus', 'done'];

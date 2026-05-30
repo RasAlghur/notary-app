@@ -10,8 +10,8 @@ Notary lets you prove a document existed at a specific point in time without law
 
 1. Upload a file (PDF, PNG, JPG, or TXT)
 2. The file is hashed client-side using SHA-256
-3. The file blob is stored on Walrus decentralized storage
-4. A notarization record is registered on Sui with your wallet address and timestamp
+3. The file blob is stored on Walrus via Tatum Storage API
+4. A `NotaryRecord` object is registered on Sui with your wallet address and timestamp
 5. You get a shareable certificate link anyone can use to verify the document
 
 ---
@@ -34,10 +34,11 @@ Notary lets you prove a document existed at a specific point in time without law
 | Styling | Tailwind CSS v4 |
 | Routing | React Router v7 |
 | Wallet | @mysten/dapp-kit-react |
-| Sui Client | @mysten/sui (gRPC via Tatum RPC) |
-| Storage | Walrus decentralized blob storage |
+| Sui Client | @mysten/sui (JSON-RPC via Tatum) |
+| Storage | Walrus decentralized blob storage (via Tatum Storage API) |
 | Smart Contract | Move on Sui |
-| RPC Nodes | Tatum enterprise Sui endpoints |
+| RPC & Storage | Tatum enterprise Sui + Walrus endpoints |
+| Deployment | Vercel (serverless API routes) |
 
 ---
 
@@ -45,34 +46,71 @@ Notary lets you prove a document existed at a specific point in time without law
 
 ```
 notary-app/
-├── src/
-│   ├── components/
-│   │   ├── wallet/         # Wallet connect + disconnect
-│   │   ├── upload/         # File upload, preview, progress
-│   │   ├── verify/         # Verification result card
-│   │   └── layout/         # Navbar, Container
-│   ├── pages/
-│   │   ├── Home.tsx        # Upload and notarize
-│   │   ├── Dashboard.tsx   # Document history
-│   │   └── Verify.tsx      # Public certificate page
-│   ├── lib/
-│   │   ├── sui.ts          # Sui client setup
-│   │   ├── walrus.ts       # Walrus upload/read
-│   │   ├── tatum.ts        # Tatum RPC helpers
-│   │   ├── hash.ts         # SHA-256 hashing
-│   │   └── constants.ts    # Env vars and URLs
-│   ├── hooks/
-│   │   ├── useWalrusUpload.ts       # Upload flow hook
-│   │   ├── useRegisterDocument.ts  # On-chain registration hook
-│   │   └── useVerifyDocument.ts    # Verification hook
-│   └── types/
-│       └── document.ts     # Shared TypeScript types
+├── api/
+│   ├── walrus-upload.ts    # Vercel serverless — proxies file upload to Tatum
+│   ├── walrus-status.ts    # Vercel serverless — polls Tatum job status
+│   ├── walrus-blob.ts      # Vercel serverless — proxies blob fetch from Walrus aggregator
+│   └── sui.ts              # Vercel serverless — proxies Sui RPC to Tatum
 ├── move/
 │   └── notary/
+│       ├── sources/
+│       │    └── registry.move   # NotaryRecord struct + register_document fn
 │       ├── Move.toml
-│       └── sources/
-│           └── registry.move   # NotaryRecord struct + register fn
-└── .env
+│       └── Published.toml
+├── public/
+│   │   ├── favicon.svg       
+│   │   └── icons.svg         
+├── src/
+│   ├── assets/
+│   │   ├── hero.png 
+│   │   ├── react.svg       
+│   │   └── vite.svg         
+│   ├── components/
+│   │   ├── document/       # DocumentCard
+│   │   ├── layout/         # Navbar, Container
+│   │   ├── upload/         # UploadBox, FilePreview, UploadProgress
+│   │   ├── verify/         # VerificationCard, StepIndicator, BlobPreview, InfoRow
+│   │   └── wallet/         # ConnectWallet button
+│   ├── config/
+│   │   ├── nav.ts          # Upload and notarize flow
+│   │   ├── steps.ts        # Upload and notarize flow
+│   │   └── upload.ts       # Public certificate page
+│   ├── hooks/
+│   │   ├── useRegisterDocument.ts  # On-chain Sui registration
+│   │   └── useVerifyDocument.ts    # Certificate verification flow
+│   │   └── useWalrusUpload.ts      # Upload + certification polling flow
+│   ├── lib/
+│   │   ├── constants.ts    # Env vars, network URLs
+│   │   ├── hash.ts         # SHA-256 client-side hashing
+│   │   ├── sui.ts          # Sui client
+│   │   ├── tatum.ts        # Sui client, queries, mutations, mapper
+│   │   └── walrus.ts       # uploadToWalrus with retry + polling logic
+│   ├── pages/
+│   │   ├── Dashboard.tsx   # Wallet document history
+│   │   ├── Home.tsx        # Upload and notarize flow
+│   │   └── Verify.tsx      # Public certificate page
+│   ├── types/
+│   │   ├── components.ts   # Component prop types, helpers, static config
+│   │   ├── document.ts     # NotarizedDocument, UploadState, VerificationResult
+│   │    └── lib.ts         # WalrusUploadResult
+│   ├── utils/
+│   │    └── format.ts       # formatDate, formatFileSize, shortenAddress, shortenHash
+│   ├── App.css
+│   ├── App.tsx
+│   ├── index.css
+│   ├── main.tsx
+│   ├── .env
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── README.md
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── vite.config.ts
+│   │
+└── vite.config.ts          # Dev proxy config for Sui RPC + Walrus routes
 ```
 
 ---
@@ -84,16 +122,13 @@ notary-app/
 - Node.js v22+
 - A Sui-compatible wallet (Sui Wallet, Phantom, etc.)
 - Tatum API key — get one free at [dashboard.tatum.io](https://dashboard.tatum.io)
-- Sui CLI (for deploying the Move contract)
+- Sui CLI (only if deploying your own Move contract)
 
 ### Installation
 
 ```bash
-# Clone the repo
 git clone https://github.com/RasAlghur/notary-app.git
 cd notary-app
-
-# Install dependencies
 npm install
 ```
 
@@ -102,18 +137,21 @@ npm install
 Create a `.env` file in the root:
 
 ```bash
-VITE_TATUM_API_KEY=your_tatum_api_key_here
-VITE_SUI_NETWORK=testnet
-VITE_PACKAGE_ID=0x0000000000000000000000000000000000000000000000000000000000000000
+VITE_SUI_NETWORK=mainnet
+SUI_NETWORK=mainnet
+VITE_TATUM_API_KEY=your-tatum-api-key
+TATUM_API_KEY=your-tatum-api-key
+VITE_PACKAGE_ID=your-package-id
 ```
 
-> `VITE_PACKAGE_ID` is filled in after deploying the Move contract. 
-  if you'd plan to use mine; fill this
-  
-  ```bash
-  VITE_TATUM_API_KEY=your_tatum_api_key_here
-  VITE_SUI_NETWORK=mainnet
-  VITE_PACKAGE_ID=0x0000000000000000000000000000000000000000000000000000000000000000
+> To skip deploying the Move contract and use the existing deployment:
+
+```bash
+VITE_SUI_NETWORK=mainnet
+SUI_NETWORK=mainnet
+VITE_TATUM_API_KEY=your-tatum-api-key
+TATUM_API_KEY=your-tatum-api-key
+VITE_PACKAGE_ID=0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363
 ```
 
 ### Run Locally
@@ -124,19 +162,47 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
+The Vite dev server proxies all `/api/*` routes to Tatum and Walrus, so no separate backend process is needed locally.
+
+---
+
+## How It Works
+
+### Upload Flow
+
+1. User selects a file — hashed immediately in the browser via the Web Crypto API (SHA-256)
+2. File is sent to `/api/walrus-upload`, which forwards it to the Tatum Storage API
+3. Tatum returns a `jobId`; the app polls `/api/walrus-status?jobId=...` until status is `CERTIFIED`
+4. On certification, the `blobId` is used to call the Move contract via `register_document`
+5. A `NotaryRecord` object is created on Sui and transferred to the user's wallet
+
+Certification can take 1–3 minutes on mainnet due to Walrus epoch finality. The app retries automatically up to 3 times on retriable network errors.
+
+### Verification Flow
+
+Anyone with a certificate URL (`/verify/:recordId`) can:
+1. Fetch the `NotaryRecord` object from Sui by object ID via Tatum RPC
+2. Confirm the blob is reachable on Walrus via the aggregator
+3. View the original file, SHA-256 hash, owner address, and timestamp — no login required
+
 ---
 
 ## Move Contract
-(skip this step if you are using my VITE_PACKAGE_ID)
-The smart contract lives in `move/notary/sources/registry.move`.
 
-It creates a `NotaryRecord` object owned by the user's wallet containing:
-- `blob_id` — Walrus blob reference
-- `file_hash` — SHA-256 hash of the original file
-- `timestamp` — Unix timestamp in milliseconds
-- `owner` — Sui wallet address
+The smart contract is in `move/notary/sources/registry.move`.
 
-### Deploy to Testnet
+It creates a `NotaryRecord` object owned by the user's wallet:
+
+| Field | Type | Description |
+|---|---|---|
+| `blob_id` | String | Walrus blob reference |
+| `file_name` | String | Original filename |
+| `file_hash` | String | SHA-256 hash of the file |
+| `file_size` | u64 | File size in bytes |
+| `timestamp` | u64 | Unix timestamp in milliseconds |
+| `owner` | address | Sui wallet address |
+
+### Deploy Your Own (Optional)
 
 ```bash
 cd move/notary
@@ -148,32 +214,15 @@ Copy the published package ID into your `.env` as `VITE_PACKAGE_ID`.
 
 ---
 
-## How Verification Works
+## Deployment (Vercel)
 
-Every notarized document gets a certificate URL:
+The `api/` directory contains Vercel serverless functions that securely proxy requests to Tatum and Walrus — keeping your API key server-side.
 
+```bash
+vercel deploy
 ```
-https://your-app.vercel.app/verify/:blobId
-```
 
-Anyone with this link can:
-1. Fetch the blob metadata from Walrus
-2. Look up the on-chain record via Tatum RPC
-3. Confirm the hash, owner, and timestamp match
-
-No login required. No central server. Fully verifiable on-chain.
-
----
-
-## RPC Endpoints
-
-Powered by [Tatum](https://tatum.io):
-
-```
-Mainnet:  https://sui-mainnet.gateway.tatum.io
-Testnet:  https://sui-testnet.gateway.tatum.io
-Devnet:   https://sui-devnet.gateway.tatum.io
-```
+Set the same environment variables from `.env` in your Vercel project settings. The `VITE_` prefixed vars are used by the frontend build; the unprefixed ones (`TATUM_API_KEY`, `SUI_NETWORK`) are used by the serverless functions.
 
 ---
 
@@ -188,16 +237,30 @@ Devnet:   https://sui-devnet.gateway.tatum.io
 
 ---
 
+## RPC Endpoints
+
+Powered by [Tatum](https://tatum.io):
+
+```
+Mainnet RPC:  https://sui-mainnet.gateway.tatum.io
+Testnet RPC:  https://sui-testnet.gateway.tatum.io
+Storage API:  https://api.tatum.io/v4/data/storage/upload
+Aggregator:   https://aggregator.walrus-mainnet.walrus.space
+```
+
+---
+
 ## Roadmap
 
-- [ ] Move contract deployment
-- [ ] Real Walrus blob upload integration
-- [ ] Tatum RPC on-chain registration
-- [ ] Dashboard fetching real wallet history
-- [ ] Mainnet deployment
+- [x] Client-side SHA-256 hashing
+- [x] Walrus blob upload via Tatum Storage API with retry logic
+- [x] On-chain registration via Move contract
+- [x] Dashboard fetching real wallet document history
+- [x] Public certificate verification page
+- [x] Mainnet deployment
 - [ ] Batch notarization
 - [ ] Email certificate delivery
-- [ ] AI AGENT
+- [ ] AI Agent integration
 
 ---
 

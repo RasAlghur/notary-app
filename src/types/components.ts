@@ -1,28 +1,15 @@
 import type { ReactNode } from 'react';
 import type { DocumentStatus, NotarizedDocument, UploadState } from './document';
-import type { VerifyStep } from './hooks';
 
 export interface ContainerProps {
     children: ReactNode;
     className?: string;
 }
 
-export const navLinks = [
-    { label: 'Notarize', href: '/' },
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Verify', href: '/verify' },
-];
 
 export interface FilePreviewProps {
     uploadState: UploadState;
     onClear: () => void;
-}
-
-
-export function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export interface UploadBoxProps {
@@ -30,41 +17,9 @@ export interface UploadBoxProps {
     disabled?: boolean;
 }
 
-export const ACCEPTED_TYPES = [
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'text/plain',
-];
-
-export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
 export interface UploadProgressProps {
     status: DocumentStatus;
     error: string | null;
-}
-
-export const documentSteps: { status: DocumentStatus; label: string }[] = [
-    { status: 'hashing', label: 'Computing SHA-256 hash' },
-    { status: 'uploading', label: 'Uploading file to Walrus via Tatum' },
-    { status: 'certifying', label: 'Waiting for on-chain certification' },
-    { status: 'registering', label: 'Registering proof on Sui' },
-    { status: 'done', label: 'Document notarized successfully' },
-];
-
-const order = ['hashing', 'uploading', 'certifying', 'registering', 'done'];
-
-export function getStepState(
-    stepStatus: DocumentStatus,
-    currentStatus: DocumentStatus
-): 'pending' | 'active' | 'done' | 'error' {
-    const stepIndex = order.indexOf(stepStatus);
-    const currentIndex = order.indexOf(currentStatus);
-
-    if (currentStatus === 'error') return stepIndex <= currentIndex ? 'error' : 'pending';
-    if (stepIndex < currentIndex) return 'done';
-    if (stepIndex === currentIndex) return 'active';
-    return 'pending';
 }
 
 export interface BlobPreviewProps {
@@ -159,27 +114,6 @@ export interface InfoRowProps {
     copyable?: boolean;
 }
 
-export function formatDate(timestamp: number): string {
-    return new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'long',
-        timeStyle: 'short',
-    }).format(new Date(timestamp));
-}
-
-export function shortenAddress(address: string): string {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-export function shortenHash(hash: string): string {
-    return `${hash.slice(0, 10)}...${hash.slice(-6)}`;
-}
-
 export interface DocumentCardProps {
     document: NotarizedDocument;
 }    
-
-export const verifySteps: { id: VerifyStep; label: string }[] = [
-    { id: 'fetching',        label: 'Looking up record on Sui' },
-    { id: 'checking-walrus', label: 'Checking Walrus blob' },
-    { id: 'done',            label: 'Verification complete' },
-];

@@ -1,7 +1,7 @@
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { getStepState, type UploadProgressProps, documentSteps } from '../../types/components';
-
+import { documentSteps, getStepState } from '../../config/steps';
+import type { UploadProgressProps } from '../../types/components';
 export default function UploadProgress({ status, error }: UploadProgressProps) {
     if (status === 'idle') return null;
 

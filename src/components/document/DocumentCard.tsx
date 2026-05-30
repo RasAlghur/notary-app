@@ -1,6 +1,7 @@
 import { ArrowRight, ExternalLink, FileText, Link } from "lucide-react";
-import { formatDate, formatFileSize, shortenHash, type DocumentCardProps } from "../../types/components";
 import { NETWORK, SUI_SCAN_URLS } from "../../lib/constants";
+import type { DocumentCardProps } from "../../types/components";
+import { formatDate, formatFileSize, shortenHash } from "../../utils/format";
 
 export function DocumentCard({ document }: DocumentCardProps) {
     return (

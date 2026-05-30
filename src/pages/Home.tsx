@@ -1,3 +1,4 @@
+// src/pages/Home.tsx
 import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { CheckCircle2, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';

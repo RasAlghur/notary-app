@@ -8,9 +8,9 @@ import {
 import { clsx } from 'clsx';
 import type { VerificationResult } from '../../types/document';
 import { NETWORK, SUI_SCAN_URLS } from '../../lib/constants';
-import { formatDate, shortenAddress } from '../../types/components';
 import { InfoRow } from './InfoRow';
 import { BlobPreview } from './BlobPreview';
+import { formatDate, shortenAddress } from '../../utils/format';
 
 
 export default function VerificationCard({

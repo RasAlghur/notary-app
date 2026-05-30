@@ -3,8 +3,10 @@ UPGRADECAP ID: 0x42cbbafe7ad536a4350252247fe8f539ccf98e4ab79e6ca74b327032210f221
 
 
 add mcp
-split file
-update readme
-delete none use codes
 make video to upload
 make content
+reupdate update readme
+
+- [ ] Batch notarization
+- [ ] Email certificate delivery
+- [ ] AI Agent integration

@@ -1,7 +1,7 @@
 import { useCurrentAccount, useDAppKit } from "@mysten/dapp-kit-react";
 import { ConnectButton } from "@mysten/dapp-kit-react/ui";
 import { LogOut } from "lucide-react";
-import { shortenAddress } from "../../types/components";
+import { shortenAddress } from "../../utils/format";
 
 export default function ConnectWallet() {
     const account = useCurrentAccount();

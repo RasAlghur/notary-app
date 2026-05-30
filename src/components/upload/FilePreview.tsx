@@ -1,6 +1,7 @@
 // src/components/upload/FilePreview.tsx
 import { FileText, X } from 'lucide-react';
-import { formatFileSize, type FilePreviewProps } from '../../types/components';
+import type { FilePreviewProps } from '../../types/components';
+import { formatFileSize } from '../../utils/format';
 
 export default function FilePreview({ uploadState, onClear }: FilePreviewProps) {
     const { file, hash } = uploadState;
