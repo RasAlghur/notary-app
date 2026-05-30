@@ -1,3 +1,4 @@
+// src/types/components.ts
 import type { ReactNode } from 'react';
 import type { DocumentStatus, NotarizedDocument, UploadState } from './document';
 

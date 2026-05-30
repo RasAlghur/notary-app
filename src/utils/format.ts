@@ -1,3 +1,4 @@
+// src/utils/format.ts
 export function formatDate(timestamp: number): string {
     return new Intl.DateTimeFormat('en-US', {
         dateStyle: 'long',

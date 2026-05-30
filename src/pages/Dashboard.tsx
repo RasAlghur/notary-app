@@ -6,6 +6,7 @@ import { useCurrentAccount } from '@mysten/dapp-kit-react';
 import { getDocumentsByOwner } from '../lib/tatum';
 import type { NotarizedDocument } from '../types/document';
 import { DocumentCard } from '../components/document/DocumentCard';
+import { NotaryAgent } from '../components/agent/NotaryAgent';
 
 export default function Dashboard() {
     const account = useCurrentAccount();
@@ -15,7 +16,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!account?.address) return;
-
         let cancelled = false;
 
         async function fetchDocuments() {
@@ -34,10 +34,7 @@ export default function Dashboard() {
         }
 
         fetchDocuments();
-
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [account, account?.address]);
 
     if (!account) {
@@ -115,6 +112,9 @@ export default function Dashboard() {
                     ))}
                 </div>
             )}
+
+            {/* AI Agent — floats over the page */}
+            <NotaryAgent address={account.address} documents={documents} />
 
         </div>
     );

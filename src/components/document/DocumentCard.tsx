@@ -1,4 +1,5 @@
-import { ArrowRight, ExternalLink, FileText, Link } from "lucide-react";
+import { ArrowRight, ExternalLink, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { NETWORK, SUI_SCAN_URLS } from "../../lib/constants";
 import type { DocumentCardProps } from "../../types/components";
 import { formatDate, formatFileSize, shortenHash } from "../../utils/format";
