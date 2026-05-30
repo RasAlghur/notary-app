@@ -264,7 +264,7 @@ Set these environment variables in your Vercel project settings:
 **Creativity (20%)** — Document notarization is a real-world legal use case that anyone understands immediately. The shareable certificate URL lets anyone verify a document with no wallet or login. The AI agent turns blockchain data into natural language — ask about your documents, check if an address is safe, or get the current SUI price, all in one chat.
 
 ### Live Demo
-[your-app.vercel.app](https://your-app.vercel.app)
+[https://notary-app-two.vercel.app/](https://notary-app-two.vercel.app/)
 
 ### Contract
 - **Package ID:** `0xefed65928f6d4e28b242dc042faa22f1aa16632c76c37b091f952a0cfe3bf363`
