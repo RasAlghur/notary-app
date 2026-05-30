@@ -8,6 +8,7 @@ import UploadProgress from '../components/upload/UploadProgress';
 import { useWalrusUpload } from '../hooks/useWalrusUpload';
 import { useRegisterDocument } from '../hooks/useRegisterDocument';
 import { NETWORK, SUI_SCAN_URLS } from '../lib/constants';
+import { NotaryAgent } from '../components/agent/NotaryAgent';
 
 export default function Home() {
     const account = useCurrentAccount();
@@ -139,6 +140,9 @@ export default function Home() {
                         </button>
                     </div>
                 </div>
+            )}
+            {account && (
+                <NotaryAgent address={account.address} />
             )}
         </div>
     );

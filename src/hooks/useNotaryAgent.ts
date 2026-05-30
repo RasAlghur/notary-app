@@ -1,16 +1,6 @@
 // src/hooks/useNotaryAgent.ts
 import { useState, useCallback } from 'react';
-import type { NotarizedDocument } from '../types/document';
-
-export interface ChatMessage {
-    role: 'user' | 'assistant';
-    content: string;
-}
-
-interface ToolCall {
-    tool: string;
-    address?: string;
-}
+import type {ChatMessage, NotarizedDocument, ToolCall } from '../types/document';
 
 async function callClaude(messages: ChatMessage[], system: string): Promise<string> {
     const res = await fetch('/api/agent', {
@@ -53,7 +43,7 @@ function buildSystemPrompt(address: string, documents: NotarizedDocument[]): str
         ? documents.map((d, i) =>
             `  ${i + 1}. "${d.fileName}" | notarized: ${new Date(d.timestamp).toLocaleDateString()} | size: ${d.fileSize} bytes | id: ${d.id} | blob: ${d.blobId} | hash: ${d.fileHash}`
         ).join('\n')
-        : '  (none yet)';
+        : '  (visit the Dashboard page to load your document list)';
 
     return `You are a helpful AI assistant for Notary — a decentralized document notarization app built on the Sui blockchain using Walrus decentralized storage, powered by Tatum.
 
@@ -102,7 +92,6 @@ export function useNotaryAgent(address: string, documents: NotarizedDocument[]) 
         const system = buildSystemPrompt(address, documents);
 
         try {
-            // First call — Claude may emit a TOOL_CALL
             const firstResponse = await callClaude(updatedMessages, system);
             const toolCall = parseToolCall(firstResponse);
 
@@ -118,7 +107,6 @@ export function useNotaryAgent(address: string, documents: NotarizedDocument[]) 
                     toolResult = { error: toolErr instanceof Error ? toolErr.message : 'Tool failed' };
                 }
 
-                // Second call — Claude synthesizes tool result into natural language
                 const messagesWithTool: ChatMessage[] = [
                     ...updatedMessages,
                     { role: 'assistant', content: firstResponse },

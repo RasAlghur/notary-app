@@ -5,8 +5,11 @@ import { ArrowLeft, Search } from 'lucide-react';
 import VerificationCard from '../components/verify/VerificationCard';
 import { useVerifyDocument } from '../hooks/useVerifyDocument';
 import { StepIndicator } from '../components/verify/StepIndicator';
+import { NotaryAgent } from '../components/agent/NotaryAgent';
+import { useCurrentAccount } from '@mysten/dapp-kit-react';
 
 export default function Verify() {
+    const account = useCurrentAccount();
     const { recordId } = useParams<{ recordId: string }>();
     const [manualId, setManualId] = useState('');
     const { verify, isVerifying, step, result, reset } = useVerifyDocument();
@@ -77,6 +80,10 @@ export default function Verify() {
             {/* Result */}
             {!isVerifying && result.message && (
                 <VerificationCard result={result} />
+            )}
+
+            {account && (
+                <NotaryAgent address={account.address} />
             )}
         </div>
     );

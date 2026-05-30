@@ -27,3 +27,13 @@ export interface VerificationResult {
     document: NotarizedDocument | null;
     message: string;
 }
+
+export interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+export interface ToolCall {
+    tool: string;
+    address?: string;
+}

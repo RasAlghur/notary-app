@@ -2,8 +2,8 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
 import { Bot, Send, ChevronDown, Sparkles, RotateCcw } from 'lucide-react';
 import clsx from 'clsx';
-import { useNotaryAgent, type ChatMessage } from '../../hooks/useNotaryAgent';
-import type { NotarizedDocument } from '../../types/document';
+import { useNotaryAgent } from '../../hooks/useNotaryAgent';
+import type { ChatMessage, NotarizedDocument } from '../../types/document';
 
 const SUGGESTIONS = [
     'How many documents have I notarized?',
@@ -14,7 +14,7 @@ const SUGGESTIONS = [
 
 interface NotaryAgentProps {
     address: string;
-    documents: NotarizedDocument[];
+    documents?: NotarizedDocument[];
 }
 
 function MessageBubble({ msg }: { msg: ChatMessage }) {
@@ -61,7 +61,7 @@ function TypingIndicator() {
     );
 }
 
-export function NotaryAgent({ address, documents }: NotaryAgentProps) {
+export function NotaryAgent({ address, documents = [] }: NotaryAgentProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -127,7 +127,7 @@ export function NotaryAgent({ address, documents }: NotaryAgentProps) {
                             </div>
                             <div>
                                 <p className="text-sm font-semibold text-white">Notary Agent</p>
-                                <p className="text-xs text-gray-500">Claude · Tatum Data API</p>
+                                <p className="text-xs text-gray-500">Gemini · Tatum Data API</p>
                             </div>
                         </div>
 
@@ -215,7 +215,7 @@ export function NotaryAgent({ address, documents }: NotaryAgentProps) {
                         </div>
 
                         <p className="mt-1.5 text-center text-xs text-gray-700">
-                            Powered by Claude + Tatum · Sui Mainnet
+                            Powered by Gemini + Tatum · Sui Mainnet
                         </p>
                     </div>
                 </div>
